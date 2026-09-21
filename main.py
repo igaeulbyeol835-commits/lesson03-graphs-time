@@ -248,10 +248,59 @@ st.divider()
 
 
 # ═══════════════════════════════════════════════════════════
-# 섹션 5. (다음 그래프를 위한 자리)
+# 섹션 5. 월 × 요일별 일관객 합계 (히트맵)
+#   - 날짜에서 '월'과 '요일'을 뽑아, 두 기준으로 일관객 합계를 더한 뒤
+#     색이 진할수록 관객이 많은 히트맵으로 보여줍니다. 요일은 월→일 순서로 둡니다.
+# ═══════════════════════════════════════════════════════════
+st.header("5. 월 × 요일별 일관객 합계")
+
+# 날짜에서 '월'과 '요일'을 뽑아냅니다.
+# dt.dayofweek는 월요일=0, 화요일=1, ... 일요일=6으로 알려줍니다.
+weekday_names = ["월", "화", "수", "목", "금", "토", "일"]
+
+df["월"] = df["날짜"].dt.month
+df["요일"] = df["날짜"].dt.dayofweek.map(dict(enumerate(weekday_names)))
+
+# 월 × 요일 두 기준으로 일관객을 모두 더합니다.
+heatmap_source = df.groupby(["월", "요일"])["일관객"].sum().reset_index()
+
+# 표(pivot) 형태로 바꿉니다. 행 = 월, 열 = 요일.
+heatmap_table = heatmap_source.pivot(index="월", columns="요일", values="일관객")
+
+# 요일 순서를 '월화수목금토일'로, 월 순서를 1월→12월로 맞춰줍니다.
+heatmap_table = heatmap_table.reindex(columns=weekday_names).sort_index()
+
+# 행 이름을 '1월', '2월'처럼 보기 좋게 바꿉니다.
+heatmap_table.index = [f"{m}월" for m in heatmap_table.index]
+
+fig5 = px.imshow(
+    heatmap_table,
+    color_continuous_scale="Reds",  # 진할수록 관객수가 많다는 뜻입니다.
+    labels={"x": "요일", "y": "월", "color": "일관객 합계(명)"},
+    aspect="auto",
+)
+fig5.update_layout(
+    xaxis_title="요일",
+    yaxis_title="월",
+)
+fig5.update_traces(hovertemplate="%{y} · %{x}요일<br>일관객 합계: %{z:,}명<extra></extra>")
+
+st.plotly_chart(fig5, use_container_width=True)
+
+st.text_input(
+    "💡 이 그래프로 알 수 있는 것",
+    key="insight_section5",
+    placeholder="예: 주말(토·일)에 색이 진하게 몰려 있어, 요일에 따라 관객수 차이가 뚜렷하다.",
+)
+
+st.divider()
+
+
+# ═══════════════════════════════════════════════════════════
+# 섹션 6. (다음 그래프를 위한 자리)
 #   앞으로 그래프를 추가할 때는 이 아래에 새로운 st.header(...)부터 시작해서
 #   위 섹션들과 같은 형태(그래프 + '이 그래프로 알 수 있는 것' 입력칸)로 이어 붙이면 됩니다.
 # ═══════════════════════════════════════════════════════════
-# st.header("5. (다음 그래프 제목)")
+# st.header("6. (다음 그래프 제목)")
 # ... 그래프 코드 ...
-# st.text_input("💡 이 그래프로 알 수 있는 것", key="insight_section5", placeholder="...")
+# st.text_input("💡 이 그래프로 알 수 있는 것", key="insight_section6", placeholder="...")
