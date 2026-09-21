@@ -147,10 +147,59 @@ st.divider()
 
 
 # ═══════════════════════════════════════════════════════════
-# 섹션 3. (다음 그래프를 위한 자리)
+# 섹션 3. 날짜별 10위권 전체 관객수 합계 (영역 그래프)
+#   - 그날그날 TOP 10 영화들의 '일관객'을 모두 더해서, 하루 전체 흥행 규모를 봅니다.
+#   - 합계가 가장 컸던 3일은 그래프 위에 점과 날짜로 표시합니다.
+# ═══════════════════════════════════════════════════════════
+st.header("3. 날짜별 10위권 전체 관객수 합계")
+
+# 같은 날짜(day)에 있는 모든 영화(최대 10편)의 '일관객'을 더합니다.
+daily_total = df.groupby("날짜", as_index=False)["일관객"].sum()
+
+# 합계가 가장 큰 3일을 뽑습니다.
+top3_days = daily_total.sort_values("일관객", ascending=False).head(3)
+
+# 영역 그래프(area chart)를 그립니다.
+fig3 = px.area(
+    daily_total,
+    x="날짜",
+    y="일관객",
+    labels={"날짜": "날짜", "일관객": "10위권 전체 관객수(명)"},
+    hover_data={"날짜": "|%Y-%m-%d", "일관객": ":,"},
+)
+fig3.update_layout(
+    hovermode="x unified",
+    yaxis_title="10위권 전체 관객수(명)",
+    xaxis_title="날짜",
+)
+
+# 합계 TOP 3일을 점 + 날짜 글씨로 따로 표시합니다.
+fig3.add_scatter(
+    x=top3_days["날짜"],
+    y=top3_days["일관객"],
+    mode="markers+text",
+    text=top3_days["날짜"].dt.strftime("%Y-%m-%d"),  # 점 위에 적을 날짜 글씨
+    textposition="top center",
+    marker=dict(size=11, color="red", line=dict(width=1, color="white")),
+    name="합계 TOP 3일",
+)
+
+st.plotly_chart(fig3, use_container_width=True)
+
+st.text_input(
+    "💡 이 그래프로 알 수 있는 것",
+    key="insight_section3",
+    placeholder="예: 특정 며칠에 전체 관객수가 크게 튀는데, 대부분 신작 개봉일과 겹친다.",
+)
+
+st.divider()
+
+
+# ═══════════════════════════════════════════════════════════
+# 섹션 4. (다음 그래프를 위한 자리)
 #   앞으로 그래프를 추가할 때는 이 아래에 새로운 st.header(...)부터 시작해서
 #   위 섹션들과 같은 형태(그래프 + '이 그래프로 알 수 있는 것' 입력칸)로 이어 붙이면 됩니다.
 # ═══════════════════════════════════════════════════════════
-# st.header("3. (다음 그래프 제목)")
+# st.header("4. (다음 그래프 제목)")
 # ... 그래프 코드 ...
-# st.text_input("💡 이 그래프로 알 수 있는 것", key="insight_section3", placeholder="...")
+# st.text_input("💡 이 그래프로 알 수 있는 것", key="insight_section4", placeholder="...")
