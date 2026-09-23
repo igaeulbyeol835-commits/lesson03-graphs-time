@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
 
 # ------------------------------------------------------------
@@ -98,5 +99,48 @@ st.plotly_chart(fig_treemap, use_container_width=True)
 
 st.markdown("**이 그래프로 알 수 있는 것:** ")
 st.info("여기에 그래프 해석 문장을 작성하세요.")
+
+st.divider()
+
+
+# ------------------------------------------------------------
+# 그래프 3. 총 관객수 히스토그램
+# ------------------------------------------------------------
+st.header("3. 총 관객수 분포")
+
+fig_hist = px.histogram(
+    df,
+    x="total_audi",
+    nbins=30,
+)
+fig_hist.update_traces(
+    hovertemplate="구간: %{x}<br>영화 편수: %{y}편<extra></extra>",
+)
+fig_hist.update_layout(
+    xaxis_title="총 관객수(명)",
+    yaxis_title="영화 편수",
+    margin=dict(t=20, b=20, l=20, r=20),
+)
+
+st.plotly_chart(fig_hist, use_container_width=True)
+
+# 가장 영화가 몰려 있는 구간 계산
+counts, bin_edges = np.histogram(df["total_audi"], bins=30)
+top_bin_idx = counts.argmax()
+bin_start = int(bin_edges[top_bin_idx])
+bin_end = int(bin_edges[top_bin_idx + 1])
+top_bin_count = int(counts[top_bin_idx])
+
+# 총 관객수가 가장 많은 영화
+top_movie_row = df.loc[df["total_audi"].idxmax()]
+top_movie_name = top_movie_row["movieNm"]
+top_movie_audi = int(top_movie_row["total_audi"])
+
+st.markdown("**이 그래프로 알 수 있는 것:** ")
+st.info(
+    f"전체 {len(df)}편 중 {top_bin_count}편이 총 관객수 {bin_start:,}명 ~ {bin_end:,}명 구간에 "
+    f"몰려 있어, 대부분의 영화는 흥행 규모가 크지 않았습니다. "
+    f"반면 총 관객수가 가장 많은 영화는 **{top_movie_name}**로, {top_movie_audi:,}명을 기록했습니다."
+)
 
 st.divider()
