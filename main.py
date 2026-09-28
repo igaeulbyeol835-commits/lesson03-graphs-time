@@ -28,7 +28,7 @@ st.markdown(
 # ------------------------------------------------------------
 @st.cache_data
 def load_data() -> pd.DataFrame:
-    url = "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis_movies.csv"
+    url = "https://raw.githubusercontent.com/happykth/data/main/kobis_daily.csv"
     df = pd.read_csv(url)
 
     # 첫 번째 장르만 사용
